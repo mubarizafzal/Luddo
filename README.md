@@ -1,3 +1,3 @@
 # Luddo
 
-Still in progress c++ game using FLTK
+Still in progress C++ game using FLTK
