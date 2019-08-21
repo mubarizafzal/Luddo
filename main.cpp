@@ -35,11 +35,12 @@ public:
   //int x, y, w, h;
 
   // 0 for yellow 3 for green
+
   int pieces [4][4];
   int die1;
   int die2;
 
-  int remaining;
+  int remaining = 10;
 
   // -1 = 0, -9 = 8
 
@@ -179,15 +180,12 @@ public:
 
         // if haven't begun choosing, i.e. still clicking
         if (!choosing) {
-
-
+          // if you have clicked on a piece
           if (selected()) {
-
-            choosing = false;
-
+            std::cout << "HMMM" << "\n";
+            choosing = true;
+            redraw();
           }
-
-
         } else {
 
 
@@ -223,6 +221,7 @@ public:
         location = (location*-1) -1;
         x = base_squares[chosen][location*2];
         y = base_squares[chosen][location*2 + 1];
+        location = (location + 1)*-1;
 
       } else {
 
@@ -232,8 +231,9 @@ public:
 
       if (m_x >= x-20 && m_x <= x+20 && m_y >= y-20 && m_y <= y+20) {
 
-        std::cout << "yes" << "\n";
-        return false;
+        std::cout << location << "\n";
+        selection = location;
+        return true;
 
 
       }
@@ -241,6 +241,7 @@ public:
 
 
     }
+    return false;
 
 
   }
@@ -264,6 +265,11 @@ public:
     if (choosing) {
       // draw choices
 
+      fl_draw(std::to_string(selection).c_str(), 400, 400);
+
+      draw_choices();
+
+      choosing = false;
 
     }
 
@@ -275,6 +281,45 @@ public:
 
     //fill_board(square_cords[0], this->x(), this->y());
   }
+
+  void draw_choices () {
+
+    int x;
+    int y;
+
+    int y_shift = 100;
+
+
+    if (selection < 0) {
+
+      selection = (selection*-1) -1;
+      x = square_cords[chosen*13][0];
+      y = square_cords[chosen*13][1];
+
+      if (remaining >= 6) {
+        fl_rectf(x, y + y_shift, 30, 30);
+      }
+      //location = (location + 1)*-1;
+
+    } else {
+
+      x = square_cords[selection][0];
+      y = square_cords[selection][1];
+
+
+
+      for (int i = 0; i < remaining; i++) {
+
+
+      }
+
+    }
+
+
+
+  }
+
+
 
   void draw_rects (int x, int y) {
 
