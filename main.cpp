@@ -49,10 +49,10 @@ public:
   // -1 = 0, -9 = 8
 
   int base_squares [4][18] = {
-    {0,0,0,0,0,0,0,0, 240 + 60, 600 - 60,240 + 60, 600 - 100,240 + 60, 600 - 140,240 + 60, 600 - 180,240 + 60, 600 - 220},
-    {0,0,0,0,0,0,0,0,240 - 180, 600 - 300, 240 - 140, 600 - 300, 240 - 100, 600 - 300, 240 - 60, 600 - 300, 240 - 20, 600 - 300},
-    {0,0,0,0,0,0,0,0,240 + 60, 600 - 540, 240 + 60, 600 - 500, 240 + 60, 600 - 460, 240 + 60, 600 - 420, 240 + 60, 600 - 380},
-    {0,0,0,0,0,0,0,0,240 + 300, 600 - 300, 240 + 260, 600 - 300, 240 + 220, 600 - 300, 240 + 180, 600 - 300, 240 + 140, 600 - 300}
+    {0,0,0,0,0,0,0,0, 240 + 60, 700 - 60,240 + 60, 700 - 100,240 + 60, 700 - 140,240 + 60, 700 - 180,240 + 60, 700 - 220},
+    {0,0,0,0,0,0,0,0,240 - 180, 700 - 300, 240 - 140, 700 - 300, 240 - 100, 700 - 300, 240 - 60, 700 - 300, 240 - 20, 700 - 300},
+    {0,0,0,0,0,0,0,0,240 + 60, 700 - 540, 240 + 60, 700 - 500, 240 + 60, 700 - 460, 240 + 60, 700 - 420, 240 + 60, 700 - 380},
+    {0,0,0,0,0,0,0,0,240 + 300, 700 - 300, 240 + 260, 700 - 300, 240 + 220, 700 - 300, 240 + 180, 700 - 300, 240 + 140, 700 - 300}
   };
 
   int square_cords[52][2] = {
@@ -113,6 +113,8 @@ public:
   int chosen = -1;
 
   bool choosing = false;
+
+  bool attacking = false;
 
   int working_piece;
 
@@ -192,13 +194,13 @@ public:
         if (!choosing) { // selector_on ?
           // if you have clicked on a piece
           if (selected()) {
-            std::cout << "HMMM" << "\n";
+            //std::cout << "HMMM" << "\n";
             choosing = true;
             redraw();
           }
         } else {
 
-          std::cout << "yes" << "\n";
+          //std::cout << "yes" << "\n";
 
           if (valid_move()) {
 
@@ -232,6 +234,8 @@ public:
 
   computer turn
 
+  repeat roll
+
   game ending mechanics
 
   new game code
@@ -242,7 +246,7 @@ public:
 
   bool valid_move () {
 
-    std::cout<< "piece value: " << pieces[chosen][working_piece] << "\n";
+    //std::cout<< "piece value: " << pieces[chosen][working_piece] << "\n";
 
     int x;
     int y;
@@ -280,20 +284,102 @@ public:
 
     } else {
 
+      bool final_moves = false;
+      int end_point = (chosen*13 - 1) % 52;
+      if (end_point < 0) {
+
+        end_point = 52 - end_point;
+
+      }
+
       for (int i = 1; i <= remaining; i++) {
 
         temp = (selection + i) % 52;
 
-        x = square_cords[temp][0];
-        y = square_cords[temp][1];
+        std::cout << temp << "TEMPIS" << "\n";
+        //----
+
+        if (temp == end_point || final_moves == true) {
+          final_moves = true;
+
+          std::cout << "HERE?22222222" << "\n";
+
+          int temp2 = temp - end_point + 4; // 4 5 6 7 8 (9)
+
+          if (temp2 <= 8) {
+
+            x = base_squares[chosen][temp2*2];
+            y = base_squares[chosen][temp2*2 + 1];
+
+            if (m_x >= x-20 && m_x <= x+20 && m_y >= y-20 && m_y <= y+20) {
+
+
+
+              if (!contains_piece(temp, chosen)) {
+
+                pieces[chosen][working_piece] = (temp2 + 1)*-1;
+                remaining = remaining - i;
+                attacking = false;
+                my_window->redraw();
+                return true;
+
+              }
+
+
+            }
+
+          } else if (temp2 == 9) {
+
+            // FOR MIDDEL
+
+          }
+
+
+
+        } else {
+
+
+          x = square_cords[temp][0];
+          y = square_cords[temp][1];
+
+          if (m_x >= x-20 && m_x <= x+20 && m_y >= y-20 && m_y <= y+20) {
+
+
+
+            if (!contains_piece(temp, chosen)) {
+
+              pieces[chosen][working_piece] = temp;
+              remaining = remaining - i;
+              attacking = false;
+              my_window->redraw();
+              return true;
+
+            }
+
+
+          }
+
+        }
+
+
+
+
+        //==
+
+
+
 
         //fl_rectf(x, y + y_shift, 30, 30);
         if (m_x >= x-20 && m_x <= x+20 && m_y >= y-20 && m_y <= y+20) {
 
           if (!contains_piece(temp, chosen)) {
 
+            //if (attacking == true) {
+            //}
+
             pieces[chosen][working_piece] = temp;
             remaining = remaining - i;
+            attacking = false;
             my_window->redraw();
             return true;
 
@@ -364,6 +450,7 @@ public:
     int c_die2;
     int c_remaining;
     int location;
+    int c_temp;
 
     for (int i = 0; i < 4; i++) {
 
@@ -372,15 +459,20 @@ public:
         c_die2 = (rand() % 6) + 1;
         c_remaining = c_die1 + c_die2;
 
-        std::cout << c_die1 << " die rolls " << c_die1 << " for " << i << "\n";
+        std::cout << c_die1 << " die rolls " << c_die2 << " for {" << i << "}" << "\n";
 
         // if anyone home move them in
 
         for (int j = 0; j < 4; j++) {
           location = pieces[i][j];
 
+
           if (location < 0) {
-            if ((c_die1 == 6 || c_die2 == 6) && remaining >= 6 && !contains_piece(i*13, i)) {
+            if ((c_die1 == 6 || c_die2 == 6) && (c_remaining >= 6) && (!contains_piece(i*13, i))) {
+
+
+              std::cout << " brings it in" << "\n";
+
 
               pieces[i][j] = i*13;
               c_remaining = c_remaining - 6;
@@ -400,12 +492,18 @@ public:
 
             for (int k = 1; k <= c_remaining; k++) {
 
-              if (contains_piece(location + k, i) == 2) {
+              c_temp = (location + k) % 52;
+              if (!contains_piece(c_temp, i) && attacking == true) {
 
-                pieces[i][j] = location + k;
+                std::cout << i << " attacks by moving " << k << "\n";
+
+                pieces[i][j] = c_temp;
                 c_remaining = c_remaining - k;
+                attacking = false;
+                break;
 
               }
+
 
             }
 
@@ -414,8 +512,7 @@ public:
 
         }
 
-        // otherwise just move
-
+        // move a piece at home first
 
         if (c_remaining > 0) {
 
@@ -423,19 +520,21 @@ public:
 
             location = pieces[i][j];
 
-            if (location >= 0) {
+            if (location >= 0 && location == i*13) {
 
-              for (int k = 1; k <= c_remaining; k++) {
+              for (int k = c_remaining; k >= 0; k--) {
 
-                if (contains_piece(location + k, i) == 2) {
+                c_temp = (location + k) % 52;
 
-                  pieces[i][j] = location + k;
+                if (!contains_piece(c_temp, i)) {
+
+                  std::cout << i << " moves home piece by " << k << "\n";
+                  pieces[i][j] = c_temp;
                   c_remaining = c_remaining - k;
-
+                  break;
                 }
 
               }
-
 
             }
 
@@ -443,6 +542,45 @@ public:
           }
 
         }
+        // otherwise just move a random one
+
+
+        if (c_remaining > 0) {
+
+          int rand_first = (rand() % 4);
+          int temp_j;
+
+          for (int j = 0; j < 4; j++) {
+
+            temp_j = (j + rand_first) % 4;
+
+            location = pieces[i][temp_j];
+
+            if (location >= 0) {
+
+              for (int k = c_remaining; k >= 0; k--) {
+
+                c_temp = (location + k) % 52;
+                if (!contains_piece(c_temp, i)) {
+
+                  std::cout << i << " does final move by " << k << "\n";
+                  pieces[i][temp_j] = c_temp;
+                  c_remaining = c_remaining - k;
+                  break;
+                }
+
+              }
+
+            }
+
+
+          }
+
+        }
+
+
+        redraw();
+
       }
 
 
@@ -472,7 +610,7 @@ public:
     fl_draw(std::to_string(die1).c_str(), 680,300);
     fl_draw(std::to_string(die2).c_str(), 720,300);
 
-    std::cout << "remaining is" << remaining << "\n";
+    //std::cout << "remaining is" << remaining << "\n";
     fl_draw ("Remaining:", 650, 360);
     fl_draw(std::to_string(remaining).c_str(), 700,400);
 
@@ -518,6 +656,16 @@ public:
           return 2;
 
         }
+        for (int j = 0; j < 4; j++) {
+          if (location == pieces[i][j] && i != corner) {
+          //std::cout<< "ATTACK!" << i << "\n";
+          // this would signal a false
+          attacking = true;
+          pieces[i][j] = (j + 1)*-1;
+          return false;
+             // attack
+          }
+        }
 
       }
 
@@ -549,20 +697,53 @@ public:
 
     } else {
 
-
+      bool final_moves = false;
+      int end_point = (chosen*13 - 1) % 52;
+      if (end_point < 0) {
+        end_point = 52 + end_point;
+      }
 
 
       for (int i = 1; i <= remaining; i++) {
 
+
         temp = (selection + i) % 52;
 
-        x = square_cords[temp][0];
-        y = square_cords[temp][1];
+          std::cout << end_point << "???" << "\n";
+
+        if (temp == end_point || final_moves == true) {
+          final_moves = true;
+
+          int temp2 = temp - end_point + 4; // 4 5 6 7 8 (9) problem is this i think
+
+          if (temp2 <= 8) {
+
+            x = base_squares[chosen][temp2*2];
+            y = base_squares[chosen][temp2*2 + 1];
+            fl_rectf(x, y, 30, 30);
 
 
-        if (!contains_piece(temp, chosen)) {
-          fl_rectf(x, y, 30, 30);
+          } else if (temp2 == 9) {
+
+            fl_rectf(300, 400, 30, 30, FL_WHITE);
+
+          }
+
+
+
+        } else {
+
+          x = square_cords[temp][0];
+          y = square_cords[temp][1];
+
+
+          if (!contains_piece(temp, chosen)) {
+            fl_rectf(x, y, 30, 30);
+          }
+
         }
+
+
 
 
 
@@ -618,22 +799,24 @@ public:
 
   void draw_4 (int i, int x, int y) {
 
-
-
     fl_color(FL_WHITE);
 
+    fl_draw(std::to_string(pieces[i][0]).c_str(), x+60,y+60);
     fl_rectf(x + 60, y + 60, 40, 40);
     base_squares[i][0] = x + 60 + 20;
     base_squares[i][1] = y + 60 + 20;
 
+    fl_draw(std::to_string(pieces[i][1]).c_str(), x+140,y+60);
     fl_rectf(x + 140, y + 60, 40, 40);
     base_squares[i][2] = x + 140 + 20;
     base_squares[i][3] = y + 60 + 20;
 
+    fl_draw(std::to_string(pieces[i][2]).c_str(), x+60,y+140);
     fl_rectf(x + 60, y + 140, 40, 40);
     base_squares[i][4] = x + 60 + 20;
     base_squares[i][5] = y + 140 + 20;
 
+    fl_draw(std::to_string(pieces[i][3]).c_str(), x+140,y+140);
     fl_rectf(x + 140, y + 140, 40, 40);
     base_squares[i][6] = x + 140 + 20;
     base_squares[i][7] = y + 140 + 20;
@@ -690,7 +873,7 @@ public:
       x = base_squares[i][j*2];
       y = base_squares[i][j*2 + 1];
 
-      fl_rectf(x - 15, y + 100 - 15, 30, 30);
+      fl_rectf(x - 15, y - 15, 30, 30);
     }
 
   }
@@ -758,6 +941,7 @@ void next_callback (Fl_Widget* widget, void*) {
   box->die1 = 0;
   box->die2 = 0;
   my_window->redraw();
+  //box->computer_turn();
 
   (roll_button)->activate();
 }
