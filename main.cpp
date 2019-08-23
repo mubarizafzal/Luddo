@@ -633,8 +633,6 @@ public:
 
     if (choosing) {
 
-      fl_draw(std::to_string(selection).c_str(), 400, 400);
-
       draw_choices();
 
     }
