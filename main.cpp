@@ -31,7 +31,7 @@ some sort of Processor that processes interaction with screen, and calls appropr
 Fl_Button *next_button;
 Fl_Button *roll_button;
 Fl_Window *my_window;
-
+Fl_Box *m_board;
 
 class Board : public Fl_Box {
 public:
@@ -186,6 +186,9 @@ public:
 
           chosen = 3;
           std::cout << "Chosen Green" << "\n";
+        }
+        if (chosen > 0) {
+          m_board->label("Click on 'Roll' to get your dice roll");
         }
 
         roll_button->activate();
@@ -509,7 +512,7 @@ public:
 
   }
 
-  void computer_turn () {
+  void computer_turn (int i) {
 
     int c_die1;
     int c_die2;
@@ -518,7 +521,7 @@ public:
     int c_temp;
     // for double turn after attack, add if statement on attack to add roll to remaining
 
-    for (int i = 0; i < 4; i++) {
+    //for (int i = 0; i < 4; i++) {
 
       if (i != chosen) {
         c_die1 = (rand() % 6) + 1;
@@ -694,6 +697,16 @@ public:
 
                       std::cout << i << "finishes a piece!" << "\n";
                       pieces[i][temp_j] = -10;
+
+                      if (winner(i)) {
+                        roll_button->deactivate();
+                        next_button->deactivate();
+                        std::string message = "! Player " + std::to_string(i) + " has won ! - Click on 'new game' to restart.";
+                        m_board->label(message.c_str());
+                        return;
+
+                      }
+
                       c_remaining = c_remaining - k;
                       break;
 
@@ -727,10 +740,28 @@ public:
 
               for (int k = c_remaining; k >= 0; k--) {
 
-                if (location - k >= -10) {
+                if (location - k > -10) {
 
                   pieces[i][temp_j] = location - k;
                   c_remaining = c_remaining -k;
+                  break;
+
+                } if (location - k == -10) {
+
+                  pieces[i][temp_j] = -10;
+
+                  if (winner(i)) {
+                    roll_button->deactivate();
+                    next_button->deactivate();
+                    // fix this
+                    std::string message = "! Player " + std::to_string(i) + " has won ! - Click on 'new game' to restart.";
+                    m_board->label(message.c_str());
+                    return;
+
+
+                  }
+
+                  c_remaining = c_remaining - k;
                   break;
 
                 }
@@ -745,15 +776,22 @@ public:
 
         }
 
+        time_t curr_time;
+        time(&curr_time);
 
-        redraw();
+        while (difftime(time(NULL), curr_time) < 1.0) {
+
+        }
+        //box->redraw();
+
+
 
       }
 
 
 
 
-    }
+    //}
 
 
 
@@ -762,7 +800,22 @@ public:
   }
 
 
+  bool winner (int i) {
+    int val = 0;
+    for (int j = 0; j < 4; j++) {
+      if (pieces[i][j] == -10) {
+        val++;
+      }
 
+    }
+    std::cout << val << " VAL ISS!" << "\n";
+
+    if (val == 4) {
+      return true;
+    }
+    return false;
+
+  }
 
 
   void draw () {
@@ -772,6 +825,10 @@ public:
     fl_rectf(this->x(), this->y(), this->w(), this->h(), FL_WHITE);
     draw_lines(this->x(), this->y());
     draw_rects(this->x(), this->y());
+
+    // setting font
+    fl_color(FL_BLACK);
+    fl_font(FL_HELVETICA_BOLD, 20);
 
     fl_draw ("You rolled:", 650, 260);
     fl_draw(std::to_string(die1).c_str(), 680,300);
@@ -1015,22 +1072,22 @@ public:
 
     fl_color(FL_WHITE);
 
-    fl_draw(std::to_string(pieces[i][0]).c_str(), x+60,y+60);
+    //fl_draw(std::to_string(pieces[i][0]).c_str(), x+60,y+60);
     fl_rectf(x + 60, y + 60, 40, 40);
     base_squares[i][0] = x + 60 + 20;
     base_squares[i][1] = y + 60 + 20;
 
-    fl_draw(std::to_string(pieces[i][1]).c_str(), x+140,y+60);
+    //fl_draw(std::to_string(pieces[i][1]).c_str(), x+140,y+60);
     fl_rectf(x + 140, y + 60, 40, 40);
     base_squares[i][2] = x + 140 + 20;
     base_squares[i][3] = y + 60 + 20;
 
-    fl_draw(std::to_string(pieces[i][2]).c_str(), x+60,y+140);
+    //fl_draw(std::to_string(pieces[i][2]).c_str(), x+60,y+140);
     fl_rectf(x + 60, y + 140, 40, 40);
     base_squares[i][4] = x + 60 + 20;
     base_squares[i][5] = y + 140 + 20;
 
-    fl_draw(std::to_string(pieces[i][3]).c_str(), x+140,y+140);
+    //fl_draw(std::to_string(pieces[i][3]).c_str(), x+140,y+140);
     fl_rectf(x + 140, y + 140, 40, 40);
     base_squares[i][6] = x + 140 + 20;
     base_squares[i][7] = y + 140 + 20;
@@ -1175,7 +1232,6 @@ Board *box;
 
 
 
-
 void roll_callback (Fl_Widget* widget, void*) {
 
 
@@ -1193,15 +1249,45 @@ void roll_callback (Fl_Widget* widget, void*) {
 
 void next_callback (Fl_Widget* widget, void*) {
 
+  ((Fl_Button*)widget)->deactivate();
   box->choosing = false;
   box->remaining = 0;
   box->die1 = 0;
   box->die2 = 0;
   my_window->redraw();
-  box->computer_turn();
+  box->computer_turn(0);
+  box->redraw();
+  Fl::flush();
+  /*
+  box->computer_turn(1);
+  box->redraw();
+  Fl::flush();
+  box->computer_turn(2);
+  box->redraw();
+  Fl::flush();
+  box->computer_turn(3);
+  box->redraw();
+  Fl::flush();
 
+  */
+  // fix redrawing
+  ((Fl_Button*)widget)->activate();
   (roll_button)->activate();
 }
+
+void start_callback (Fl_Widget* widget, void*) {
+
+  my_window->remove(box);
+  box = new Board(0, 100, 600, 600);
+  my_window->add(box);
+  roll_button->deactivate();
+  next_button->deactivate();
+  box->redraw();
+  my_window->redraw();
+  m_board->label("Click on a corner to begin the game!");
+
+}
+
 
 
 
@@ -1212,13 +1298,13 @@ int main (int argc, char ** argv)
 
   Fl_Button *start_button;
 
-  Fl_Box *m_board;
 
   my_window = new Fl_Window (800, 700);
   my_window->color(fl_lighter(FL_GRAY));
 
   start_button = new Fl_Button (20,20,100,60);
   start_button->label("New Game");
+  start_button->callback(start_callback, 0);
 
   roll_button = new Fl_Button (620,20,160,160);
   roll_button->labelsize(20);
@@ -1240,6 +1326,7 @@ int main (int argc, char ** argv)
   m_board = new Fl_Box(150, 20, 450, 60);
   m_board->box(FL_THIN_UP_BOX);
   m_board->color(FL_WHITE);
+  m_board->label("Click on a corner to begin the game!");
 
   box = new Board(0, 100, 600, 600);
   box->box(FL_THIN_UP_BOX);
