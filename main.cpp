@@ -116,6 +116,8 @@ public:
 
   bool attacking = false;
 
+  int attack_i, attack_j;
+
   int working_piece;
 
 
@@ -277,7 +279,6 @@ public:
 
                 pieces[chosen][working_piece] = (temp + i + 1)*-1;
                 remaining = remaining - i;
-                attacking = false;
                 my_window->redraw();
                 return true;
 
@@ -295,7 +296,6 @@ public:
 
               pieces[chosen][working_piece] = -10;
               remaining = remaining -i;
-              attacking = false;
               my_window->redraw();
               return true;
 
@@ -323,7 +323,6 @@ public:
 
               pieces[chosen][working_piece] = chosen*13;
               remaining = remaining - 6;
-
               my_window->redraw();
 
               return true;
@@ -390,7 +389,6 @@ public:
 
                 pieces[chosen][working_piece] = (temp2 + 1)*-1;
                 remaining = remaining - i;
-                attacking = false;
                 my_window->redraw();
                 return true;
 
@@ -406,7 +404,6 @@ public:
 
               pieces[chosen][working_piece] = -10;
               remaining = remaining -i;
-              attacking = false;
               my_window->redraw();
               return true;
 
@@ -424,13 +421,18 @@ public:
 
           if (m_x >= x-20 && m_x <= x+20 && m_y >= y-20 && m_y <= y+20) {
 
-
+            std::cout << attacking << " ATK VAL" << "\n";
 
             if (!contains_piece(temp, chosen)) {
 
+              if (attacking == true) {
+
+                pieces[attack_i][attack_j] = (attack_j + 1)*-1;
+
+              }
+
               pieces[chosen][working_piece] = temp;
               remaining = remaining - i;
-              attacking = false;
               my_window->redraw();
               return true;
 
@@ -514,6 +516,7 @@ public:
     int c_remaining;
     int location;
     int c_temp;
+    // for double turn after attack, add if statement on attack to add roll to remaining
 
     for (int i = 0; i < 4; i++) {
 
@@ -524,13 +527,14 @@ public:
 
         std::cout << c_die1 << " die rolls " << c_die2 << " for {" << i << "}" << "\n";
 
+
         // if anyone home move them in
 
         for (int j = 0; j < 4; j++) {
           location = pieces[i][j];
 
 
-          if (location < 0) {
+          if (location < 0 && location > -5) {
             if ((c_die1 == 6 || c_die2 == 6) && (c_remaining >= 6) && (!contains_piece(i*13, i))) {
 
 
@@ -550,19 +554,31 @@ public:
         for (int j = 0; j < 4; j++) {
 
           location = pieces[i][j];
+          int end_point = (i*13 - 1) % 52;
+          if (end_point < 0) {
+            end_point = 52 + end_point;
+          }
 
           if (location >= 0) {
 
             for (int k = 1; k <= c_remaining; k++) {
 
               c_temp = (location + k) % 52;
+
+
+              if (c_temp == end_point) {
+
+                break;
+              }
+
+
               if (!contains_piece(c_temp, i) && attacking == true) {
 
                 std::cout << i << " attacks by moving " << k << "\n";
 
+                pieces[attack_i][attack_j] = (attack_j + 1)*-1;
                 pieces[i][j] = c_temp;
                 c_remaining = c_remaining - k;
-                attacking = false;
                 break;
 
               }
@@ -585,7 +601,7 @@ public:
 
             if (location >= 0 && location == i*13) {
 
-              for (int k = c_remaining; k >= 0; k--) {
+              for (int k = c_remaining; k > 0; k--) {
 
                 c_temp = (location + k) % 52;
 
@@ -605,6 +621,9 @@ public:
           }
 
         }
+
+
+
         // otherwise just move a random one
 
 
@@ -612,27 +631,112 @@ public:
 
           int rand_first = (rand() % 4);
           int temp_j;
+          int end_point = (i*13 - 1) % 52;
+          if (end_point < 0) {
+            end_point = 52 + end_point;
+          }
 
           for (int j = 0; j < 4; j++) {
 
             temp_j = (j + rand_first) % 4;
-
+            bool final_moves = false;
             location = pieces[i][temp_j];
 
+            // also moving within end
             if (location >= 0) {
+
+              for (int k = 1; k <= c_remaining; k++) {
+                c_temp = (location + k) % 52;
+
+
+
+                if (c_temp == end_point) {
+                  std::cout << "SHOULD NOT" << "\n";
+                  final_moves = true;
+                  break;
+
+                }
+              }
+
+
+              for (int k = c_remaining; k > 0; k--) {
+
+                c_temp = (location + k) % 52;
+
+                if (final_moves == true) {
+
+                  int temp2;
+
+                  if (i == 0 && c_temp != end_point) {
+
+                    temp2 = c_temp + 5;
+
+                  } else {
+
+                    temp2 = c_temp - end_point + 4;
+
+                  }
+
+
+                  if (temp2 <= 8) {
+
+                    if (!contains_piece(temp2, i)) {
+
+                      std::cout << i << " does final ending move into " << temp2 << "\n";
+                      pieces[i][temp_j] = (temp2 + 1)*-1;
+                      c_remaining = c_remaining - k;
+                      break;
+
+                    }
+
+
+                  } else if (temp2 == 9){
+
+                      std::cout << i << "finishes a piece!" << "\n";
+                      pieces[i][temp_j] = -10;
+                      c_remaining = c_remaining - k;
+                      break;
+
+
+                  }
+
+
+
+                } else {
+
+
+                  if (!contains_piece(c_temp, i)) {
+
+                    std::cout << i << " does final move by " << k << "\n";
+                    pieces[i][temp_j] = c_temp;
+                    c_remaining = c_remaining - k;
+                    break;
+                  }
+
+
+
+                }
+
+
+
+
+
+              }
+
+            } else if (location < -4 && location != -10) {
 
               for (int k = c_remaining; k >= 0; k--) {
 
-                c_temp = (location + k) % 52;
-                if (!contains_piece(c_temp, i)) {
+                if (location - k >= -10) {
 
-                  std::cout << i << " does final move by " << k << "\n";
-                  pieces[i][temp_j] = c_temp;
-                  c_remaining = c_remaining - k;
+                  pieces[i][temp_j] = location - k;
+                  c_remaining = c_remaining -k;
                   break;
+
                 }
 
               }
+
 
             }
 
@@ -699,6 +803,8 @@ public:
 
   int contains_piece (int location, int corner) {
 
+    attacking = false;
+
     if (location == 0 || location == 8 || location == 13 || location == 21 || location == 26 || location == 34 || location == 39 || location == 47 || location < -4) {
 
       for (int i = 0; i < 4; i++) {
@@ -717,14 +823,18 @@ public:
       for (int i = 0; i < 4; i++) {
         if (location == pieces[corner][i]) {
           return 2;
+          std::cout << "NO" << "\n";
 
         }
         for (int j = 0; j < 4; j++) {
           if (location == pieces[i][j] && i != corner) {
           //std::cout<< "ATTACK!" << i << "\n";
           // this would signal a false
+          std::cout << "Can attack! " << location << "\n";
           attacking = true;
-          pieces[i][j] = (j + 1)*-1;
+          attack_i = i;
+          attack_j = j;
+          //pieces[i][j] = (j + 1)*-1;
           return false;
              // attack
           }
@@ -802,7 +912,6 @@ public:
 
         temp = (selection + i) % 52;
 
-          std::cout << end_point << "???" << "\n";
 
         if (temp == end_point || final_moves == true) {
           final_moves = true;
@@ -842,6 +951,7 @@ public:
 
 
           if (!contains_piece(temp, chosen)) {
+            attacking = false;
             fl_rectf(x, y, 30, 30);
           }
 
@@ -992,7 +1102,6 @@ public:
 
       location = pieces[i][j];
 
-      std::cout << location << "  " << j << "\n";
 
       if (location < 0) {
 
@@ -1024,7 +1133,6 @@ public:
 
           }
 
-          std::cout<< "FIN" << temp_x << "  " << temp_y << "\n";
 
           fl_rectf(temp_x, temp_y, 40, 40, r, g, b);
 
@@ -1090,7 +1198,7 @@ void next_callback (Fl_Widget* widget, void*) {
   box->die1 = 0;
   box->die2 = 0;
   my_window->redraw();
-  //box->computer_turn();
+  box->computer_turn();
 
   (roll_button)->activate();
 }
