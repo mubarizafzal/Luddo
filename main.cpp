@@ -256,25 +256,84 @@ public:
 
     if (selection < 0) {
 
-      x = square_cords[chosen*13][0];
-      y = square_cords[chosen*13][1];
 
-      if ((die1 == 6 || die2 == 6) && remaining >= 6) {
 
-        if (m_x >= x-20 && m_x <= x+20 && m_y >= y-20 && m_y <= y+20) {
+      if (selection < -4) {
 
-          if (!contains_piece(chosen*13, chosen)) {
+        temp = selection*-1 -1;
 
-            pieces[chosen][working_piece] = chosen*13;
-            remaining = remaining - 6;
+        for (int i = 1; i <= remaining; i++) {
 
-            my_window->redraw();
+          if (temp + i < 9) {
 
-            return true;
+            x = base_squares[chosen][(temp + i)*2];
+            y = base_squares[chosen][(temp + i)*2 + 1];
+
+
+            if (m_x >= x-20 && m_x <= x+20 && m_y >= y-20 && m_y <= y+20) {
+
+
+              if (!contains_piece(temp + i, chosen)) {
+
+                pieces[chosen][working_piece] = (temp + i + 1)*-1;
+                remaining = remaining - i;
+                attacking = false;
+                my_window->redraw();
+                return true;
+
+              }
+
+
+            }
+
+
+
+          } else if (temp + i == 9) {
+
+
+            if (m_x >= 240 && m_x <= 460 && m_y >= 340 && m_y <= 560) {
+
+              pieces[chosen][working_piece] = -10;
+              remaining = remaining -i;
+              attacking = false;
+              my_window->redraw();
+              return true;
+
+            }
+
+            // finish!!!
 
           }
 
+        }
 
+
+
+
+      } else {
+
+        x = square_cords[chosen*13][0];
+        y = square_cords[chosen*13][1];
+
+        if ((die1 == 6 || die2 == 6) && remaining >= 6) {
+
+          if (m_x >= x-20 && m_x <= x+20 && m_y >= y-20 && m_y <= y+20) {
+
+            if (!contains_piece(chosen*13, chosen)) {
+
+              pieces[chosen][working_piece] = chosen*13;
+              remaining = remaining - 6;
+
+              my_window->redraw();
+
+              return true;
+
+            }
+
+
+
+
+          }
 
 
         }
@@ -282,13 +341,14 @@ public:
 
       }
 
+
     } else {
 
       bool final_moves = false;
       int end_point = (chosen*13 - 1) % 52;
       if (end_point < 0) {
 
-        end_point = 52 - end_point;
+        end_point = 52 + end_point;
 
       }
 
@@ -304,18 +364,29 @@ public:
 
           std::cout << "HERE?22222222" << "\n";
 
-          int temp2 = temp - end_point + 4; // 4 5 6 7 8 (9)
+          int temp2;
+
+          if (chosen == 0 && temp != end_point) {
+            temp2 = temp + 5;
+
+          } else {
+
+             temp2 = temp - end_point + 4; // 4 5 6 7 8 (9) problem is this i think
+
+          }
 
           if (temp2 <= 8) {
 
             x = base_squares[chosen][temp2*2];
             y = base_squares[chosen][temp2*2 + 1];
 
+            std::cout << "will now mouse check" << "\n";
+
             if (m_x >= x-20 && m_x <= x+20 && m_y >= y-20 && m_y <= y+20) {
 
+              std::cout << "WITHIN AREA" << "\n";
 
-
-              if (!contains_piece(temp, chosen)) {
+              if (!contains_piece(temp2, chosen)) {
 
                 pieces[chosen][working_piece] = (temp2 + 1)*-1;
                 remaining = remaining - i;
@@ -330,7 +401,16 @@ public:
 
           } else if (temp2 == 9) {
 
-            // FOR MIDDEL
+
+            if (m_x >= 240 && m_x <= 460 && m_y >= 340 && m_y <= 560) {
+
+              pieces[chosen][working_piece] = -10;
+              remaining = remaining -i;
+              attacking = false;
+              my_window->redraw();
+              return true;
+
+            }
 
           }
 
@@ -364,28 +444,6 @@ public:
 
 
 
-        //==
-
-
-
-
-        //fl_rectf(x, y + y_shift, 30, 30);
-        if (m_x >= x-20 && m_x <= x+20 && m_y >= y-20 && m_y <= y+20) {
-
-          if (!contains_piece(temp, chosen)) {
-
-            //if (attacking == true) {
-            //}
-
-            pieces[chosen][working_piece] = temp;
-            remaining = remaining - i;
-            attacking = false;
-            my_window->redraw();
-            return true;
-
-          }
-
-        }
 
 
       }
@@ -412,6 +470,11 @@ public:
       location = pieces[chosen][i];
       m_x = Fl::event_x();
       m_y = Fl::event_y();
+
+      // don't worry about the pieces at -10, they are out of the game
+      if (location == -10) {
+        continue;
+      }
 
       if (location < 0) {
 
@@ -636,7 +699,7 @@ public:
 
   int contains_piece (int location, int corner) {
 
-    if (location == 0 || location == 8 || location == 13 || location == 21 || location == 26 || location == 34 || location == 39 || location == 47) {
+    if (location == 0 || location == 8 || location == 13 || location == 21 || location == 26 || location == 34 || location == 39 || location == 47 || location < -4) {
 
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
@@ -684,16 +747,46 @@ public:
 
     if (selection < 0) {
 
-      x = square_cords[chosen*13][0];
-      y = square_cords[chosen*13][1];
+      if (selection < -4) {
+        temp = selection*-1 - 1;
+        // should not be allowed to select a piece with -10
 
-      if (((die1 == 6 || die2 == 6) && remaining >= 6)) {
+        for (int i = 1; i <= remaining; i++) {
 
-        if (!contains_piece(chosen*13, chosen)) {
-          fl_rectf(x, y, 30, 30);
+          if (temp + i < 9) {
+
+            x = base_squares[chosen][(temp + i)*2];
+            y = base_squares[chosen][(temp + i)*2 + 1];
+
+            fl_rectf(x, y, 30, 30);
+
+          } else if (temp + i == 9) {
+
+            fl_rectf(300,400,30,30, FL_WHITE);
+
+          }
+
         }
 
+
+      } else {
+
+        x = square_cords[chosen*13][0];
+        y = square_cords[chosen*13][1];
+
+        if (((die1 == 6 || die2 == 6) && remaining >= 6)) {
+
+          if (!contains_piece(chosen*13, chosen)) {
+            fl_rectf(x, y, 30, 30);
+          }
+
+        }
+
+
+
       }
+
+
 
     } else {
 
@@ -714,7 +807,18 @@ public:
         if (temp == end_point || final_moves == true) {
           final_moves = true;
 
-          int temp2 = temp - end_point + 4; // 4 5 6 7 8 (9) problem is this i think
+          int temp2;
+
+          if (chosen == 0 && temp != end_point) {
+            temp2 = temp + 5;
+
+          } else {
+
+             temp2 = temp - end_point + 4; // 4 5 6 7 8 (9) problem is this i think
+
+          }
+
+
 
           if (temp2 <= 8) {
 
@@ -888,11 +992,56 @@ public:
 
       location = pieces[i][j];
 
-      if (location < 0) {
-        location = (location*-1) - 1;
+      std::cout << location << "  " << j << "\n";
 
-        x = (double)base_squares[i][location*2];
-        y = (double)base_squares[i][location*2 + 1];
+      if (location < 0) {
+
+        if (location == -10) {
+          int temp_x = 0;
+          int temp_y = 100;
+
+          if (i > 1) {
+
+            temp_x = 360;
+          }
+
+          if (i == 0 || i == 3) {
+
+            temp_y = 460;
+          }
+
+          if (j == 1 || j == 3) {
+            temp_x = temp_x + 140;
+          } else {
+            temp_x = temp_x + 60;
+          }
+
+          if (j > 1) {
+
+            temp_y = temp_y + 140;
+          } else {
+            temp_y = temp_y + 60;
+
+          }
+
+          std::cout<< "FIN" << temp_x << "  " << temp_y << "\n";
+
+          fl_rectf(temp_x, temp_y, 40, 40, r, g, b);
+
+
+          //rectf()
+
+          continue;
+        } else {
+
+          location = (location*-1) - 1;
+
+          x = (double)base_squares[i][location*2];
+          y = (double)base_squares[i][location*2 + 1];
+
+
+        }
+
 
       } else {
 
