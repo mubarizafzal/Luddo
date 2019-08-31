@@ -1,3 +1,8 @@
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
+#include <FL/fl_draw.H>
 
 #ifndef BOARD_H
 #define BOARD_H
@@ -24,7 +29,6 @@ public:
   bool game_over = false;
 
   int attack_i, attack_j;
-
 
   int base_tiles[4][18] = {
     {0 + 80, 460 + 80, 0 + 80, 460 + 160, 0 + 160, 460 + 80, 0 + 160, 460 + 160, 240 + 60, 700 - 60,240 + 60, 700 - 100,240 + 60, 700 - 140,240 + 60, 700 - 180,240 + 60, 700 - 220},
@@ -476,6 +480,7 @@ public:
     p->set_die();
 
     // if any piece can be brought into play, bring it into play
+
     for (int j = 0; j < 4; j++) {
 
       location = p->pieces[j];
@@ -673,10 +678,7 @@ public:
 
   }
 
-
-
   void draw () {
-
 
     fl_rectf(this->x(), this->y(), this->w(), this->h(), FL_WHITE);
     draw_lines(this->x(), this->y());
@@ -714,8 +716,6 @@ public:
       fl_draw("Green", 460, 560);
 
     }
-
-
   }
 
   void draw_choices () {
@@ -745,8 +745,6 @@ public:
               fl_rectf(x - 15, y - 15, 30, 30);
 
             }
-
-
           } else if (temp - die == -10) {
 
             fl_rectf(300 - 15, 400 - 15, 30, 30, FL_WHITE);
@@ -768,7 +766,6 @@ public:
           }
         }
       }
-
 
     } else {
 
@@ -811,7 +808,6 @@ public:
             fl_rectf(300 - 30, 400 - 30, 60, 60, FL_WHITE);
 
           }
-
 
         } else {
 

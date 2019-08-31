@@ -1,25 +1,16 @@
-#include <FL/Fl.H>
-#include <FL/Fl_Window.H>
-#include <FL/Fl_Box.H>
-#include <FL/Fl_Button.H>
-#include <FL/fl_draw.H>
 #include <iostream>
-#include <cstdlib>
 #include <time.h>
-#include <array>
 #include "Player.h"
 #include "C_Player.h"
 #include "H_Player.h"
 #include "Board.h"
 
-// implement better random
-
 Board* box;
 
 void roll_callback (Fl_Widget* widget, void*) {
 
-  box->human.die_rolls[0] = (rand() % 6) + 1;
-  box->human.die_rolls[1] =  (rand() % 6) + 1;
+  box->human.die_rolls[0] = uid(gen);
+  box->human.die_rolls[1] = uid(gen);
   box->choosing = false;
 
   my_window->redraw();
@@ -40,7 +31,6 @@ void next_callback (Fl_Widget* widget, void*) {
   box->human.die_rolls[1] = 0;
   my_window->redraw();
 
-
   for (int i = 0; i < 3; i++) {
 
     box->computer_turn(&box->comps[i]);
@@ -52,12 +42,10 @@ void next_callback (Fl_Widget* widget, void*) {
     }
   }
 
-
   if (box->game_over) {
     roll_button->deactivate();
     ((Fl_Button*)widget)->deactivate();
     m_board->label("Game Over! - Click 'new game' to restart.");
-
   } else {
     ((Fl_Button*)widget)->activate();
     (roll_button)->activate();
@@ -82,8 +70,6 @@ void start_callback (Fl_Widget* widget, void*) {
 }
 
 int main (int argc, char ** argv) {
-
-  srand(time(0));
 
   my_window = new Fl_Window (800, 700);
   my_window->color(fl_lighter(FL_GRAY));

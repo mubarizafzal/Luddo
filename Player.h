@@ -16,10 +16,7 @@ public:
 
   int r, g, b;
 
-  int home;
-  int safe;
-
-  // n is which corner the player is, 0 is yellow, 1 is blue, 2 is red, 3 is green
+  int home, safe;
 
   void set_player (int id, int home, int x, int y, int r, int g, int b) {
 
