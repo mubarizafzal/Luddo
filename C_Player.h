@@ -3,6 +3,7 @@
 #ifndef C_PLAYER_H
 #define C_PLAYER_H
 
+// random number generator
 std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_int_distribution<> uid(1, 6);
