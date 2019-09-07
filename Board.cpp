@@ -5,8 +5,10 @@
 #include "H_Player.h"
 #include "Board.h"
 
+// object that contains everything on the game board
 Board* box;
 
+// what happens when the 'Roll' button is pressed
 void roll_callback (Fl_Widget* widget, void*) {
 
   box->human.die_rolls[0] = uid(gen);
@@ -19,6 +21,7 @@ void roll_callback (Fl_Widget* widget, void*) {
 
 }
 
+// what happens when the 'Next' button is pressed
 void next_callback (Fl_Widget* widget, void*) {
 
   m_board->label("Computer Turn - Please Wait");
@@ -56,6 +59,7 @@ void next_callback (Fl_Widget* widget, void*) {
 
 }
 
+// what happens when the 'Start' button is pressed
 void start_callback (Fl_Widget* widget, void*) {
 
   my_window->remove(box);
@@ -68,6 +72,8 @@ void start_callback (Fl_Widget* widget, void*) {
   m_board->label("Click on a corner to begin the game!");
 
 }
+
+
 
 int main (int argc, char ** argv) {
 
