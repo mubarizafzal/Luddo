@@ -108,8 +108,7 @@ int main (int argc, char ** argv) {
 
   my_window->end ();
   my_window->show (argc, argv);
+  
 
   return(Fl::run());
 }
-
-
